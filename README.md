@@ -4,6 +4,8 @@
 
 ## Authors: Zachary Moore and Latherio Kidd
 
+ChatGPT created
+
 ## Setup
 
 **How to initialize/run your application (where applicable)**
