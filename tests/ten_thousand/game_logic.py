@@ -61,3 +61,9 @@ class GameLogic:
         # Generate and return a tuple of random integers between 1 and 6
         return tuple(random.randint(1, 6) for _ in range(number_of_dice))
 
+    @staticmethod
+    def validate_dice_to_keep(current_roll, dice_to_keep):
+        # Validate if the dice to keep are part of the current roll
+        count_roll = Counter(current_roll)
+        count_keep = Counter(dice_to_keep)
+        return all(count_keep[dice] <= count_roll[dice] for dice in count_keep)
