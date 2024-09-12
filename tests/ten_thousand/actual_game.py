@@ -11,8 +11,13 @@ class Game:
         self.current_round = 1
         self.game_logic = GameLogic()
 
+    def reset_game(self):
+        self.total_score = 0
+        self.current_round = 1
+    
     def welcome_message(self):
-        print("Welcome! Would you like to play a game? (y/n, q to quit)")
+        print("Welcome to Ten Thousand")
+        print("(y)es to play or (n)o to decline")
 
     def play_round(self):
         print(f"Round {self.current_round}:")
@@ -23,39 +28,43 @@ class Game:
             roll = self.game_logic.roll_dice(remaining_dice)
             print(f"Dice roll: {roll}")
 
-            if self.game_logic.calculate_score(roll) == 0:
-                print("No scorable dice. Game over.")
+            scoring_dice = self.game_logic.get_scorers(roll)
+            if not scoring_dice:
+                print("****************************************")
+                print("**        Zilch!!! Round over         **")
+                print("****************************************")
                 return 0
 
             while True:
                 try:
-                    user_input = input("Enter the dice to keep (separated by spaces), or 'q' to quit: ")
+                    user_input = input("Enter dice to keep, or (q)uit: ")
                     if user_input.lower() == 'q':
                         return None
                     dice_to_keep = tuple(map(int, user_input.split()))
-                    if not self.game_logic.validate_dice_to_keep(roll, dice_to_keep):
-                        raise ValueError
+
+                    if not all(die in scoring_dice for die in dice_to_keep):
+                        raise ValueError("You have selected non-scoring dice.")
+
+                    if not self.game_logic.validate_keepers(roll, dice_to_keep):
+                        raise ValueError("Invalid dice selection. Try again.")
 
                     kept_score = self.game_logic.calculate_score(dice_to_keep)
-                    if kept_score == 0:
-                        raise ValueError("Selected dice are not scoring. Try again.")
-
                     round_score += kept_score
                     break
                 except ValueError as e:
-                    print(e if str(e) else "Invalid dice selection. Try again.")
+                    print(e)
 
             remaining_dice -= len(dice_to_keep)
 
             if remaining_dice == 0:
                 remaining_dice = 6
 
-            print(f"Current score: {round_score}")
-
-            decision = input("Do you want to bank your points or roll again? (bank/roll), or 'q' to quit: ").lower()
-            if decision == "bank":
+            print(f"You have {round_score} unbanked points and {remaining_dice} dice remaining.")
+            
+            decision = input("(r)oll again, (b)ank your points or (q)uit: ").lower()
+            if decision == "b":
                 self.total_score += round_score
-                print(f"Points banked. Total score: {self.total_score}")
+                print(f"You banked {round_score} points in round {self.current_round}")
                 if self.total_score >= self.TARGET_SCORE:
                     print(f"You've reached {self.total_score} points and won the game!")
                     return self.total_score
@@ -68,17 +77,16 @@ class Game:
 
     def play_game(self):
         self.welcome_message()
-        user_decision = input("Your choice: ").lower()
+        user_decision = input(">  ").lower()
 
         if user_decision == "y":
             while True:
                 round_result = self.play_round()
                 if round_result is None or round_result >= self.TARGET_SCORE:
                     break
-        else:
-            print("Thanks for playing! Goodbye!")
+        
 
-        print(f"Game over! Your final score is: {self.total_score}")
+        print(f"Thanks for playing. You earned {self.total_score} points.")
 
 
 def main():

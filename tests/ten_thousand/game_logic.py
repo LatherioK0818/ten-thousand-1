@@ -62,8 +62,35 @@ class GameLogic:
         return tuple(random.randint(1, 6) for _ in range(number_of_dice))
 
     @staticmethod
-    def validate_dice_to_keep(current_roll, dice_to_keep):
+    def validate_keepers(current_roll, dice_to_keep):
         # Validate if the dice to keep are part of the current roll
         count_roll = Counter(current_roll)
         count_keep = Counter(dice_to_keep)
         return all(count_keep[dice] <= count_roll[dice] for dice in count_keep)
+    
+    @staticmethod
+    def get_scorers(dice_roll):
+        
+        if not dice_roll:
+            return tuple()
+
+        count = Counter(dice_roll)
+
+        if len(count) == 6:
+            return dice_roll 
+
+        
+        if len(count) == 3 and all(value == 2 for value in count.values()):
+            return dice_roll  
+
+        scoring_dice = []
+
+        for num, freq in count.items():
+            if freq >= 3:
+                scoring_dice.extend([num] * freq)  
+            elif num == 1 and freq < 3:
+                scoring_dice.extend([1] * freq) 
+            elif num == 5 and freq < 3:
+                scoring_dice.extend([5] * freq) 
+
+        return tuple(scoring_dice)
